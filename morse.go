@@ -19,6 +19,7 @@ func pulses(samples iter.Seq[bool]) iter.Seq[pulse] {
 		prevT := 0
 		prevOn := false
 		for on := range samples {
+			currDur = t - prevT // for visualization
 			if on != prevOn {
 				d := t - prevT
 				p := pulse{prevOn, d}
@@ -56,7 +57,7 @@ func symbols(pulses iter.Seq[pulse]) iter.Seq[symbol] {
 			} else {
 				if pulse.duration < threshold*2 {
 					continue // discard
-				} else if pulse.duration < threshold*5 {
+				} else if pulse.duration < threshold*6 {
 					sym = letter
 				} else {
 					sym = space

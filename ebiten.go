@@ -11,6 +11,7 @@ import (
 
 var (
 	// Dump internal states to visualize the Morse code
+	currDur    int
 	currPulse  pulse
 	currSymbol symbol
 	currRun    string
@@ -49,12 +50,12 @@ func (a *app) Update() error {
 }
 
 func (a *app) Draw(screen *ebiten.Image) {
-	msg := fmt.Sprintf("Click or Press space\nPulse: %+v\nSymbol: %q\nRun: %s\n%s", currPulse, currSymbol, currRun, text)
+	msg := fmt.Sprintf("Click or Press space\nUnit: %d\nPulse: %+v\nSymbol: %q\nRun: %s\n%s", currDur/threshold, currPulse, currSymbol, currRun, text)
 	ebitenutil.DebugPrint(screen, msg)
 }
 
 func (a *app) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return 320, 240
+	return 240, 180
 }
 
 func args2seq[T any](vs ...T) iter.Seq[T] {
@@ -63,7 +64,7 @@ func args2seq[T any](vs ...T) iter.Seq[T] {
 
 func main() {
 	// Initialize game
-	ebiten.SetWindowSize(640, 480)
+	ebiten.SetWindowSize(480, 360)
 	ebiten.SetWindowTitle("Morse code demo")
 	a := newApp()
 	if err := ebiten.RunGame(a); err != nil {
