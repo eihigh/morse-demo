@@ -8,17 +8,31 @@ var (
 	threshold = 12 // in ticks
 )
 
+// newPublisher creates a new Publisher that decodes a stream of boolean states.
+func newPublisher() Publisher[bool, string] {
+	sub := func(states iter.Seq[bool]) iter.Seq[string] {
+		return decode(symbols(pulses(states)))
+	}
+	return Pubsub(sub)
+}
+
+// publishToDecode publishes a state to a Publisher and returns the decoded text.
+func publishToDecode(pub Publisher[bool, string], states iter.Seq[bool]) []string {
+	out, _ := pub(states)
+	return out
+}
+
 type pulse struct {
 	on       bool
 	duration int
 }
 
-func pulses(samples iter.Seq[bool]) iter.Seq[pulse] {
+func pulses(states iter.Seq[bool]) iter.Seq[pulse] {
 	return func(yield func(pulse) bool) {
 		t := 0
 		prevT := 0
 		prevOn := false
-		for on := range samples {
+		for on := range states {
 			currDur = t - prevT // for visualization
 			if on != prevOn {
 				d := t - prevT

@@ -16,7 +16,7 @@ var (
 	currSymbol symbol
 	currRun    string
 
-	pub Publisher[bool, string] // convert samples to runes
+	pub Publisher[bool, string] // convert states to runes
 
 	text string // decoded text
 )
@@ -29,22 +29,12 @@ func newApp() *app {
 
 func (a *app) Update() error {
 	if pub == nil {
-		// Initialize publisher
-		sub := func(samples iter.Seq[bool]) iter.Seq[string] {
-			return decode(symbols(pulses(samples)))
-		}
-		pub = Pubsub(sub)
+		pub = newPublisher()
 	}
 
-	var on bool
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) || ebiten.IsKeyPressed(ebiten.KeySpace) {
-		on = true
-	} else {
-		on = false
-	}
-	out, _ := pub(args2seq(on))
-	for _, s := range out {
-		text += string(s)
+	on := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) || ebiten.IsKeyPressed(ebiten.KeySpace)
+	for _, s := range publishToDecode(pub, args2seq(on)) {
+		text += s
 	}
 	return nil
 }
