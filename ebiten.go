@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"iter"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -15,7 +14,7 @@ var (
 	currSymbol symbol
 	currRun    string
 
-	send func(bool) iter.Seq[string]
+	pub Publisher[bool, string]
 
 	text string // decoded text
 )
@@ -27,12 +26,12 @@ func newApp() *app {
 }
 
 func (a *app) Update() error {
-	if send == nil {
-		send, _ = newSender()
+	if pub == nil {
+		pub = newPublisher()
 	}
 
 	on := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) || ebiten.IsKeyPressed(ebiten.KeySpace)
-	for s := range send(on) {
+	for _, s := range publishToDecode(pub, args(on)) {
 		text += s
 	}
 	return nil
