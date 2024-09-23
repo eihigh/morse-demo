@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"iter"
-	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -16,7 +15,7 @@ var (
 	currSymbol symbol
 	currRun    string
 
-	pub Publisher[bool, string] // convert states to runes
+	send func(bool) iter.Seq[string]
 
 	text string // decoded text
 )
@@ -28,12 +27,12 @@ func newApp() *app {
 }
 
 func (a *app) Update() error {
-	if pub == nil {
-		pub = newPublisher()
+	if send == nil {
+		send, _ = newSender()
 	}
 
 	on := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) || ebiten.IsKeyPressed(ebiten.KeySpace)
-	for _, s := range publishToDecode(pub, args2seq(on)) {
+	for s := range send(on) {
 		text += s
 	}
 	return nil
@@ -46,10 +45,6 @@ func (a *app) Draw(screen *ebiten.Image) {
 
 func (a *app) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return 240, 180
-}
-
-func args2seq[T any](vs ...T) iter.Seq[T] {
-	return slices.Values(vs)
 }
 
 func main() {
