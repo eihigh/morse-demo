@@ -29,8 +29,8 @@ func Send[In, Out any](receive func(iter.Seq[In]) iter.Seq[Out]) (send func(In) 
 	resume, stop := iter.Pull(coro)
 
 	send = func(v In) iter.Seq[Out] {
-		in = v
 		return func(yield func(Out) bool) {
+			in = v
 			consume = yield
 			resume() // only one iteration
 			consume = nil
