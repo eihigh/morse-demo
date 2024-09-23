@@ -7,12 +7,10 @@ Decoding morse codes interactively with Go's iterators.
 The following code converts a stream of ON/OFF states into text decoded as Morse code.
 
 ```go
-func newSender() (func(bool) iter.Seq[string], func()) {
-	recv := func(states iter.Seq[bool]) iter.Seq[string] {
-		return decode(symbols(pulses(states)))
-	}
-	return Send(recv)
+recv := func(states iter.Seq[bool]) iter.Seq[string] {
+	return decode(symbols(pulses(states)))
 }
+send, _ = Send(recv)
 ```
 
 ```go
