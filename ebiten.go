@@ -17,7 +17,8 @@ var (
 
 	push func(state bool) bool
 
-	text string // decoded text
+	text   string // decoded text
+	textJP string
 )
 
 type app struct{}
@@ -28,9 +29,24 @@ func newApp() *app {
 
 func (a *app) Update() error {
 	if push == nil {
-		push = Push(func(states iter.Seq[bool]) {
-			for v := range decode(symbols(pulses(states))) {
+		jp := Push(func(symbols iter.Seq[symbol]) {
+			for v := range decodeJP(symbols) {
+				textJP += v
+				fmt.Println(textJP)
+			}
+		})
+
+		en := Push(func(symbols iter.Seq[symbol]) {
+			for v := range decode(symbols) {
 				text += v
+			}
+		})
+
+		push = Push(func(states iter.Seq[bool]) {
+			for v := range symbols(pulses(states)) {
+				if !jp(v) || !en(v) {
+					return
+				}
 			}
 		})
 	}
