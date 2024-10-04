@@ -15,7 +15,7 @@ var (
 	currSymbol symbol
 	currRun    string
 
-	push PushFunc[bool, string]
+	push func(state bool) bool
 
 	text string // decoded text
 )
@@ -28,17 +28,15 @@ func newApp() *app {
 
 func (a *app) Update() error {
 	if push == nil {
-		seq := func(states iter.Seq[bool]) iter.Seq[string] {
-			return decode(symbols(pulses(states)))
-		}
-		push = Push(seq)
+		push = Push(func(states iter.Seq[bool]) {
+			for v := range decode(symbols(pulses(states))) {
+				text += v
+			}
+		})
 	}
 
 	on := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) || ebiten.IsKeyPressed(ebiten.KeySpace)
-	out, _ := push(on, nil)
-	for _, s := range out {
-		text += s
-	}
+	push(on)
 	return nil
 }
 

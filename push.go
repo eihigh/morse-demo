@@ -2,34 +2,25 @@ package main
 
 import "iter"
 
-type SeqFunc[VIn, VOut any] func(iter.Seq[VIn]) iter.Seq[VOut]
-
-type PushFunc[VIn, VOut any] func(in VIn, outbuf []VOut) ([]VOut, bool)
-
-func Push[VIn, VOut any](seqfunc SeqFunc[VIn, VOut]) PushFunc[VIn, VOut] {
-	var tmpIn VIn
-	var tmpOutbuf []VOut
+func Push[In any](recv func(iter.Seq[In])) (push func(In) bool) {
+	var in In
 
 	coro := func(yieldCoro func(bool) bool) {
-		seq := seqfunc(func(yieldSeq func(VIn) bool) {
-			for yieldCoro(yieldSeq(tmpIn)) {
+		seq := func(yieldSeq func(In) bool) {
+			for yieldCoro(yieldSeq(in)) {
 			}
-		})
-
-		for v := range seq {
-			tmpOutbuf = append(tmpOutbuf, v)
 		}
+		recv(seq)
 	}
 
 	next, stop := iter.Pull(coro)
-	return func(in VIn, outbuf []VOut) ([]VOut, bool) {
-		tmpIn = in
-		tmpOutbuf = outbuf
+	return func(v In) bool {
+		in = v
 		more, _ := next()
 		if !more {
 			stop()
-			return tmpOutbuf, false
+			return false
 		}
-		return tmpOutbuf, true
+		return true
 	}
 }
