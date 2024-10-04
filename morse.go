@@ -9,20 +9,6 @@ var (
 	threshold = 12 // in ticks
 )
 
-// newPublisher creates a new Publisher that decodes a stream of boolean states.
-func newPublisher() Publisher[bool, string] {
-	sub := func(states iter.Seq[bool]) iter.Seq[string] {
-		return decode(symbols(pulses(states)))
-	}
-	return Pubsub(sub)
-}
-
-// publishToDecode publishes a state to a Publisher and returns the decoded text.
-func publishToDecode(pub Publisher[bool, string], states iter.Seq[bool]) []string {
-	out, _ := pub(states)
-	return out
-}
-
 func args[T any](vs ...T) iter.Seq[T] {
 	return slices.Values(vs)
 }
